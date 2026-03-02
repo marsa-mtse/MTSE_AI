@@ -6,7 +6,7 @@ import google.generativeai as genai
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # اختيار موديل Gemini
-model = genai.GenerativeModel("gemini-1.5-pro-latest")
+model = genai.GenerativeModel("gemini-1.5-flash-latest")
 # ==============================
 # PAGE CONFIG
 # ==============================
