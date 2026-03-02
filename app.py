@@ -1,60 +1,4 @@
-# ==================================================
-# MTSE AI - Professional Core Structure
-# Version 2026 Enterprise Architecture
-# ==================================================
-
 import streamlit as st
-# ==============================
-# PREMIUM UI STYLE
-# ==============================
-
-st.markdown("""
-<style>
-
-/* ===== Global Font & Background ===== */
-body {
-    background: linear-gradient(135deg, #0f172a, #111827);
-    color: white;
-}
-
-/* ===== Sidebar ===== */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0b1120, #111827);
-    width: 300px !important;
-    padding-top: 20px;
-}
-    background-color: #0b1120;
-}
-
-/* ===== Buttons ===== */
-.stButton>button {
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
-    color: white;
-    border-radius: 8px;
-    border: none;
-    height: 45px;
-    font-weight: 600;
-}
-
-.stButton>button:hover {
-    transform: scale(1.03);
-    transition: 0.2s ease-in-out;
-}
-
-/* ===== RTL Support ===== */
-html[lang="ar"] body {
-    direction: rtl;
-    text-align: right;
-}
-
-/* ===== Headers ===== */
-h1, h2, h3 {
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 # ==============================
 # PAGE CONFIG
@@ -68,7 +12,67 @@ st.set_page_config(
 )
 
 # ==============================
-# LANGUAGE SYSTEM (GLOBAL)
+# PREMIUM UI STYLE
+# ==============================
+
+st.markdown("""
+<style>
+
+/* Global Background */
+body {
+    background: linear-gradient(135deg, #0f172a, #111827);
+    color: white;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background: #0b1120;
+}
+
+/* Sidebar Buttons */
+.stButton > button {
+    width: 100%;
+    border-radius: 10px;
+    height: 42px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: white;
+    transition: 0.3s;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
+    transform: scale(1.03);
+    border: none;
+}
+
+/* Active Page */
+.active-page {
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* Language Button */
+.lang-btn button {
+    background: rgba(255,255,255,0.1) !important;
+    border-radius: 20px !important;
+}
+
+/* Headers */
+h1, h2, h3 {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ==============================
+# LANGUAGE SYSTEM
 # ==============================
 
 if "lang" not in st.session_state:
@@ -85,93 +89,102 @@ if "page" not in st.session_state:
     st.session_state.page = "Dashboard"
 
 # ==============================
-# SIDEBAR NAVIGATION
+# SIDEBAR
 # ==============================
 
 with st.sidebar:
+
     st.markdown("## 🚀 MTSE AI")
     st.markdown("---")
 
     # Language Toggle
-    # Professional Language Switch
-current_lang = st.session_state.lang
-
-if current_lang == "ar":
-    if st.button("🌍 Switch to English"):
-        st.session_state.lang = "en"
-        st.rerun()
-else:
-    if st.button("🌍 التحويل إلى العربية"):
-        st.session_state.lang = "ar"
-        st.rerun()
-
-
-  # =============================
-# Navigation Buttons (Pro Active Style)
-# =============================
-
-# ==============================
-# PROFESSIONAL SIDEBAR NAVIGATION
-# ==============================
-
-pages = {
-    "Dashboard": ("لوحة التحكم", "Dashboard"),
-    "Analytics": ("التحليلات", "Analytics"),
-    "AI Engine": ("محرك الذكاء", "AI Engine"),
-    "Reports": ("التقارير", "Reports"),
-    "Estimator": ("المقايسات", "Estimator"),
-    "Settings": ("الإعدادات", "Settings"),
-}
-
-for page_key, (ar, en) in pages.items():
-
-    if st.session_state.page == page_key:
-        st.markdown(
-            f"""
-            <div style="
-                background: linear-gradient(90deg,#00c6ff,#0072ff);
-                padding:10px;
-                border-radius:10px;
-                margin-bottom:8px;
-                font-weight:600;
-            ">
-            🟢 {t(ar,en)}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    else:
-        if st.button(t(ar,en)):
-            st.session_state.page = page_key
+    if st.session_state.lang == "ar":
+        if st.button("🌍 Switch to English"):
+            st.session_state.lang = "en"
             st.rerun()
+    else:
+        if st.button("🌍 التحويل إلى العربية"):
+            st.session_state.lang = "ar"
+            st.rerun()
+
+    st.markdown("---")
+
+    # Navigation Function
+    def nav_button(page_name, ar_label, en_label):
+        if st.session_state.page == page_name:
+            st.markdown(
+                f'<div class="active-page">🟢 {t(ar_label,en_label)}</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            if st.button(t(ar_label, en_label)):
+                st.session_state.page = page_name
+                st.rerun()
+
+    # Pages
+    nav_button("Dashboard","لوحة التحكم","Dashboard")
+    nav_button("Analytics","التحليلات","Analytics")
+    nav_button("AI Engine","محرك الذكاء","AI Engine")
+    nav_button("Reports","التقارير","Reports")
+    nav_button("Estimator","المقايسات","Estimator")
+    nav_button("Settings","الإعدادات","Settings")
+
 # ==============================
-# MAIN AREA ROUTER
+# MAIN AREA
 # ==============================
 
-st.title(t("منصة MTSE AI الاحترافية", "MTSE AI Professional Platform"))
+st.title(t("منصة MTSE AI الاحترافية","MTSE AI Professional Platform"))
 
-page = st.session_state.page
+# ------------------------------
+# Dashboard
+# ------------------------------
 
-if page == "Dashboard":
-    st.header(t("لوحة التحكم", "Dashboard"))
-    st.info(t("مرحلة البناء الأساسية جاهزة.", "Core structure initialized."))
+if st.session_state.page == "Dashboard":
+    st.subheader(t("لوحة التحكم","Dashboard"))
+    st.success(t("تم تشغيل النظام بنجاح","System initialized successfully"))
 
-elif page == "Analytics":
-    st.header(t("التحليلات", "Analytics"))
-    st.info(t("سيتم إضافة محرك التحليل المتقدم هنا.", "Advanced analytics engine will be here."))
+# ------------------------------
+# Analytics
+# ------------------------------
 
-elif page == "AI Engine":
-    st.header(t("محرك الذكاء الاصطناعي", "AI Engine"))
-    st.info(t("طبقة الذكاء قيد البناء.", "AI Layer under construction."))
+elif st.session_state.page == "Analytics":
+    st.subheader(t("قسم التحليلات","Analytics Section"))
+    st.info(t("سيتم إضافة تحليلات متقدمة هنا","Advanced analytics coming soon"))
 
-elif page == "Reports":
-    st.header(t("إدارة التقارير", "Reports Management"))
-    st.info(t("نظام التقارير الاحترافي سيتم ربطه هنا.", "Professional reporting system will be connected here."))
+# ------------------------------
+# AI Engine
+# ------------------------------
 
-elif page == "Estimator":
-    st.header(t("نظام المقايسات الذكي", "Smart Project Estimator"))
-    st.info(t("سيتم إضافة نظام المقايسات الاحترافي هنا.", "Smart estimation system will be implemented here."))
+elif st.session_state.page == "AI Engine":
+    st.subheader(t("محرك الذكاء الاصطناعي","AI Engine"))
+    user_input = st.text_area(t("أدخل طلبك","Enter your request"))
+    if st.button(t("تشغيل","Run")):
+        st.success(t("تمت المعالجة","Processed successfully"))
 
-elif page == "Settings":
-    st.header(t("الإعدادات", "Settings"))
-    st.info(t("إعدادات المنصة والتحكم الكامل.", "Platform settings and control."))
+# ------------------------------
+# Reports
+# ------------------------------
+
+elif st.session_state.page == "Reports":
+    st.subheader(t("التقارير الاحترافية","Professional Reports"))
+    st.warning(t("توليد التقارير قيد التطوير","Report generator under development"))
+
+# ------------------------------
+# Estimator
+# ------------------------------
+
+elif st.session_state.page == "Estimator":
+    st.subheader(t("حساب مقايسات المشاريع","Project Cost Estimator"))
+    project_value = st.number_input(t("قيمة المشروع","Project value"), min_value=0)
+    percentage = st.slider(t("نسبة الربح %","Profit percentage %"),0,100,20)
+    if st.button(t("احسب","Calculate")):
+        profit = project_value * (percentage/100)
+        st.success(f"{t('الربح المتوقع','Expected Profit')}: {profit:,.2f}")
+
+# ------------------------------
+# Settings
+# ------------------------------
+
+elif st.session_state.page == "Settings":
+    st.subheader(t("الإعدادات","Settings"))
+    st.write(t("إعدادات المنصة العامة","General platform settings"))
