@@ -19,6 +19,10 @@ body {
 
 /* ===== Sidebar ===== */
 section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0b1120, #111827);
+    width: 300px !important;
+    padding-top: 20px;
+}
     background-color: #0b1120;
 }
 
@@ -102,24 +106,57 @@ else:
         st.rerun()
 
 
-    # Navigation Buttons
+  # =============================
+# Navigation Buttons (Pro Active Style)
+# =============================
+
+# Dashboard
+if st.session_state.page == "Dashboard":
+    st.markdown("### 🟢 " + t("لوحة التحكم", "Dashboard"))
+else:
     if st.button(t("لوحة التحكم", "Dashboard")):
         st.session_state.page = "Dashboard"
+        st.rerun()
 
+# Analytics
+if st.session_state.page == "Analytics":
+    st.markdown("### 🟢 " + t("التحليلات", "Analytics"))
+else:
     if st.button(t("التحليلات", "Analytics")):
         st.session_state.page = "Analytics"
+        st.rerun()
 
+# AI Engine
+if st.session_state.page == "AI Engine":
+    st.markdown("### 🟢 " + t("محرك الذكاء", "AI Engine"))
+else:
     if st.button(t("محرك الذكاء", "AI Engine")):
         st.session_state.page = "AI Engine"
+        st.rerun()
 
+# Reports
+if st.session_state.page == "Reports":
+    st.markdown("### 🟢 " + t("التقارير", "Reports"))
+else:
     if st.button(t("التقارير", "Reports")):
         st.session_state.page = "Reports"
+        st.rerun()
 
+# Estimator
+if st.session_state.page == "Estimator":
+    st.markdown("### 🟢 " + t("المقايسات", "Estimator"))
+else:
     if st.button(t("المقايسات", "Estimator")):
         st.session_state.page = "Estimator"
+        st.rerun()
 
+# Settings
+if st.session_state.page == "Settings":
+    st.markdown("### 🟢 " + t("الإعدادات", "Settings"))
+else:
     if st.button(t("الإعدادات", "Settings")):
         st.session_state.page = "Settings"
+        st.rerun()
 
 # ==============================
 # MAIN AREA ROUTER
