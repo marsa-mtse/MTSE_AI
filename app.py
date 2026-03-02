@@ -1,8 +1,28 @@
 import streamlit as st
 import os
-import google.generativeai as genai
+def ask_ai(prompt):
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    api_key = st.secrets["GEMINI_API_KEY"]
+
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }]
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 200:
+        result = response.json()
+        return result["candidates"][0]["content"]["parts"][0]["text"]
+    else:
+        return f"Error: {response.text}"
 # ==============================
 # PAGE CONFIG
 # ==============================
@@ -157,27 +177,23 @@ elif st.session_state.page == "Analytics":
 # AI Engine
 # ----------------------------
 
-if st.session_state.page == "AI Engine":
+elif st.session_state.page == "AI Engine":
 
-    st.subheader(t("محرك الذكاء الاصطناعي", "AI Engine"))
+    st.subheader("🤖 محرك الذكاء الاصطناعي")
 
     user_input = st.text_area(
-        t("اكتب طلبك هنا", "Enter your prompt here")
+        "اكتب طلبك هنا",
+        placeholder="اكتب تحليل مشروع، دراسة جدوى، محتوى تسويقي..."
     )
 
-    if st.button(t("تنفيذ", "Generate")):
+    if st.button("🚀 تحليل", use_container_width=True):
 
-        if user_input:
-
-            try:
-                model = genai.GenerativeModel("gemini-1.0-pro")
-                response = model.generate_content(user_input)
-
-                st.success(t("النتيجة:", "Result:"))
-                st.write(response.text)
-
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
+        if user_input.strip() == "":
+            st.warning("من فضلك اكتب طلب أولاً")
+        else:
+            with st.spinner("جاري التحليل..."):
+                result = ask_ai(user_input)
+                st.success(result)
 # ------------------------------
 # Reports
 # ------------------------------
