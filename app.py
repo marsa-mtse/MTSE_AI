@@ -2,11 +2,7 @@ import streamlit as st
 import os
 import google.generativeai as genai
 
-# تحميل المفتاح من Secrets
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# اختيار موديل Gemini
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
 # ==============================
 # PAGE CONFIG
 # ==============================
@@ -161,27 +157,27 @@ elif st.session_state.page == "Analytics":
 # AI Engine
 # ----------------------------
 
-elif st.session_state.page == "AI Engine":
+if st.session_state.page == "AI Engine":
 
     st.subheader(t("محرك الذكاء الاصطناعي", "AI Engine"))
 
     user_input = st.text_area(
-        t("اكتب طلبك هنا", "Enter your request here"),
-        height=150
+        t("اكتب طلبك هنا", "Enter your prompt here")
     )
 
-    if st.button(t("تشغيل التحليل", "Run Analysis")):
+    if st.button(t("تنفيذ", "Generate")):
 
-        if user_input.strip() == "":
-            st.warning(t("من فضلك أدخل نص للتحليل", "Please enter text"))
-        else:
-            with st.spinner(t("جاري التحليل...", "Processing...")):
-                try:
-                    response = model.generate_content(user_input)
-                    st.success(t("تم التحليل بنجاح", "Analysis Complete"))
-                    st.markdown(response.text)
-                except Exception as e:
-                    st.error("Error: " + str(e))
+        if user_input:
+
+            try:
+                model = genai.GenerativeModel("gemini-1.0-pro")
+                response = model.generate_content(user_input)
+
+                st.success(t("النتيجة:", "Result:"))
+                st.write(response.text)
+
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
 # ------------------------------
 # Reports
 # ------------------------------
