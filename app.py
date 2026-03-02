@@ -4,6 +4,53 @@
 # ==================================================
 
 import streamlit as st
+# ==============================
+# PREMIUM UI STYLE
+# ==============================
+
+st.markdown("""
+<style>
+
+/* ===== Global Font & Background ===== */
+body {
+    background: linear-gradient(135deg, #0f172a, #111827);
+    color: white;
+}
+
+/* ===== Sidebar ===== */
+section[data-testid="stSidebar"] {
+    background-color: #0b1120;
+}
+
+/* ===== Buttons ===== */
+.stButton>button {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    color: white;
+    border-radius: 8px;
+    border: none;
+    height: 45px;
+    font-weight: 600;
+}
+
+.stButton>button:hover {
+    transform: scale(1.03);
+    transition: 0.2s ease-in-out;
+}
+
+/* ===== RTL Support ===== */
+html[lang="ar"] body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* ===== Headers ===== */
+h1, h2, h3 {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ==============================
 # PAGE CONFIG
