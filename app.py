@@ -1,5 +1,12 @@
 import streamlit as st
+import os
+import google.generativeai as genai
 
+# تحميل المفتاح من Secrets
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# اختيار موديل Gemini
+model = genai.GenerativeModel("gemini-1.5-flash")
 # ==============================
 # PAGE CONFIG
 # ==============================
@@ -150,17 +157,31 @@ if st.session_state.page == "Dashboard":
 elif st.session_state.page == "Analytics":
     st.subheader(t("قسم التحليلات","Analytics Section"))
     st.info(t("سيتم إضافة تحليلات متقدمة هنا","Advanced analytics coming soon"))
-
-# ------------------------------
+# ----------------------------
 # AI Engine
-# ------------------------------
+# ----------------------------
 
 elif st.session_state.page == "AI Engine":
-    st.subheader(t("محرك الذكاء الاصطناعي","AI Engine"))
-    user_input = st.text_area(t("أدخل طلبك","Enter your request"))
-    if st.button(t("تشغيل","Run")):
-        st.success(t("تمت المعالجة","Processed successfully"))
 
+    st.subheader(t("محرك الذكاء الاصطناعي", "AI Engine"))
+
+    user_input = st.text_area(
+        t("اكتب طلبك هنا", "Enter your request here"),
+        height=150
+    )
+
+    if st.button(t("تشغيل التحليل", "Run Analysis")):
+
+        if user_input.strip() == "":
+            st.warning(t("من فضلك أدخل نص للتحليل", "Please enter text"))
+        else:
+            with st.spinner(t("جاري التحليل...", "Processing...")):
+                try:
+                    response = model.generate_content(user_input)
+                    st.success(t("تم التحليل بنجاح", "Analysis Complete"))
+                    st.markdown(response.text)
+                except Exception as e:
+                    st.error("Error: " + str(e))
 # ------------------------------
 # Reports
 # ------------------------------
