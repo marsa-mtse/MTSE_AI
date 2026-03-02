@@ -109,15 +109,7 @@ else:
   # =============================
 # Navigation Buttons (Pro Active Style)
 # =============================
-/* ===== Active Sidebar Button ===== */
-.active-btn {
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
-    color: white !important;
-    padding: 8px;
-    border-radius: 8px;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
+
 # ==============================
 # PROFESSIONAL SIDEBAR NAVIGATION
 # ==============================
