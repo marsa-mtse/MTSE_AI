@@ -5,7 +5,7 @@ import requests
 def ask_ai(prompt):
     api_key = st.secrets["GEMINI_API_KEY"]
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={api_key}"
 
     headers = {
         "Content-Type": "application/json"
