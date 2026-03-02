@@ -1,10 +1,11 @@
 import streamlit as st
 import os
-def ask_ai(prompt):
+import requests
 
+def ask_ai(prompt):
     api_key = st.secrets["GEMINI_API_KEY"]
 
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
 
     headers = {
         "Content-Type": "application/json"
@@ -22,7 +23,7 @@ def ask_ai(prompt):
         result = response.json()
         return result["candidates"][0]["content"]["parts"][0]["text"]
     else:
-        return f"Error: {response.text}"
+        return f"Error {response.status_code}: {response.text}"
 # ==============================
 # PAGE CONFIG
 # ==============================
