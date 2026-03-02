@@ -109,55 +109,49 @@ else:
   # =============================
 # Navigation Buttons (Pro Active Style)
 # =============================
+/* ===== Active Sidebar Button ===== */
+.active-btn {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    color: white !important;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+# ==============================
+# PROFESSIONAL SIDEBAR NAVIGATION
+# ==============================
 
-# Dashboard
-if st.session_state.page == "Dashboard":
-    st.markdown("### 🟢 " + t("لوحة التحكم", "Dashboard"))
-else:
-    if st.button(t("لوحة التحكم", "Dashboard")):
-        st.session_state.page = "Dashboard"
-        st.rerun()
+pages = {
+    "Dashboard": ("لوحة التحكم", "Dashboard"),
+    "Analytics": ("التحليلات", "Analytics"),
+    "AI Engine": ("محرك الذكاء", "AI Engine"),
+    "Reports": ("التقارير", "Reports"),
+    "Estimator": ("المقايسات", "Estimator"),
+    "Settings": ("الإعدادات", "Settings"),
+}
 
-# Analytics
-if st.session_state.page == "Analytics":
-    st.markdown("### 🟢 " + t("التحليلات", "Analytics"))
-else:
-    if st.button(t("التحليلات", "Analytics")):
-        st.session_state.page = "Analytics"
-        st.rerun()
+for page_key, (ar, en) in pages.items():
 
-# AI Engine
-if st.session_state.page == "AI Engine":
-    st.markdown("### 🟢 " + t("محرك الذكاء", "AI Engine"))
-else:
-    if st.button(t("محرك الذكاء", "AI Engine")):
-        st.session_state.page = "AI Engine"
-        st.rerun()
-
-# Reports
-if st.session_state.page == "Reports":
-    st.markdown("### 🟢 " + t("التقارير", "Reports"))
-else:
-    if st.button(t("التقارير", "Reports")):
-        st.session_state.page = "Reports"
-        st.rerun()
-
-# Estimator
-if st.session_state.page == "Estimator":
-    st.markdown("### 🟢 " + t("المقايسات", "Estimator"))
-else:
-    if st.button(t("المقايسات", "Estimator")):
-        st.session_state.page = "Estimator"
-        st.rerun()
-
-# Settings
-if st.session_state.page == "Settings":
-    st.markdown("### 🟢 " + t("الإعدادات", "Settings"))
-else:
-    if st.button(t("الإعدادات", "Settings")):
-        st.session_state.page = "Settings"
-        st.rerun()
-
+    if st.session_state.page == page_key:
+        st.markdown(
+            f"""
+            <div style="
+                background: linear-gradient(90deg,#00c6ff,#0072ff);
+                padding:10px;
+                border-radius:10px;
+                margin-bottom:8px;
+                font-weight:600;
+            ">
+            🟢 {t(ar,en)}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        if st.button(t(ar,en)):
+            st.session_state.page = page_key
+            st.rerun()
 # ==============================
 # MAIN AREA ROUTER
 # ==============================
