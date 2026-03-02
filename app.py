@@ -68,10 +68,10 @@ st.set_page_config(
 # ==============================
 
 if "lang" not in st.session_state:
-    st.session_state.lang = "AR"
+    st.session_state.lang = "ar"
 
 def t(ar, en):
-    return ar if st.session_state.lang == "AR" else en
+    return ar if st.session_state.lang == "ar" else en
 
 # ==============================
 # PAGE STATE
@@ -89,15 +89,18 @@ with st.sidebar:
     st.markdown("---")
 
     # Language Toggle
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🇸🇦"):
-            st.session_state.lang = "AR"
-    with col2:
-        if st.button("🇺🇸"):
-            st.session_state.lang = "EN"
+    # Professional Language Switch
+current_lang = st.session_state.lang
 
-    st.markdown("---")
+if current_lang == "ar":
+    if st.button("🌍 Switch to English"):
+        st.session_state.lang = "en"
+        st.rerun()
+else:
+    if st.button("🌍 التحويل إلى العربية"):
+        st.session_state.lang = "ar"
+        st.rerun()
+
 
     # Navigation Buttons
     if st.button(t("لوحة التحكم", "Dashboard")):
