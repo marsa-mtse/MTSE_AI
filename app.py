@@ -15,7 +15,15 @@ def ask_ai(prompt: str) -> str:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "You are a professional AI assistant."},
+                {"role": "system", "content": 
+"أنت خبير استشاري محترف في تحليل المشاريع الهندسية والاقتصادية. 
+قدم التحليل منظمًا في أقسام واضحة: 
+- مكونات المشروع
+- الفوائد
+- المخاطر
+- التوصيات
+- الخلاصة النهائية"
+}
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
@@ -201,9 +209,10 @@ elif st.session_state.page == "AI Engine":
         if user_input.strip() == "":
             st.warning("من فضلك اكتب طلب أولاً")
         else:
-            with st.spinner("جاري التحليل..."):
-                result = ask_ai(user_input)
-                st.success(result)
+            with st.spinner("جاري تحليل البيانات باستخدام الذكاء الاصطناعي..."):
+    result = ask_ai(user_input)
+                st.markdown("### 📊 نتيجة التحليل")
+st.markdown(result)
 # ------------------------------
 # Reports
 # ------------------------------
