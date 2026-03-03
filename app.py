@@ -208,7 +208,7 @@ elif st.session_state.page == "AI Engine":
 
     user_input = st.text_area(
         "اكتب طلبك هنا",
-        placeholder="اكتب تحليل مشروع الصرف الصحي بالقرية..."
+        placeholder="اكتب المطلوب..."
     )
 
     if st.button("🚀 تحليل", use_container_width=True):
