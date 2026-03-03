@@ -5,4 +5,5 @@ pdfplumber
 python-docx
 reportlab
 stripe
-
+arabic-reshaper
+python-bidi
