@@ -1,19 +1,38 @@
 import streamlit as st
-import os
 import google.generativeai as genai
-import streamlit as st
+
+# =========================
+# CONFIGURE GEMINI
+# =========================
 
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 def ask_ai(prompt):
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("models/gemini-1.0-pro")
     response = model.generate_content(prompt)
     return response.text
-    if response.status_code == 200:
-        result = response.json()
-        return result["candidates"][0]["content"]["parts"][0]["text"]
+
+# =========================
+# UI
+# =========================
+
+st.set_page_config(page_title="MTSE AI", layout="wide")
+
+st.title("🚀 منصة MTSE AI الاحترافية")
+st.subheader("محرك الذكاء الاصطناعي")
+
+user_input = st.text_area("اكتب طلبك هنا")
+
+if st.button("🚀 تحليل"):
+    if user_input:
+        with st.spinner("جاري التحليل..."):
+            try:
+                result = ask_ai(user_input)
+                st.success(result)
+            except Exception as e:
+                st.error(f"حدث خطأ: {e}")
     else:
-        return f"Error {response.status_code}: {response.text}"
+        st.warning("من فضلك اكتب طلب أولاً")
 # ==============================
 # PAGE CONFIG
 # ==============================
