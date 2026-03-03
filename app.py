@@ -13,7 +13,7 @@ client = Groq(
 def ask_ai(prompt: str) -> str:
     try:
         response = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": "You are a professional AI assistant."},
                 {"role": "user", "content": prompt}
