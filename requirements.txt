@@ -6,8 +6,5 @@ openpyxl
 reportlab
 python-docx
 pdfplumber
-pytesseract
 Pillow
-opencv-python-headless
-moviepy
 
