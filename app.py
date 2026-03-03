@@ -1,23 +1,14 @@
 import streamlit as st
 import os
-import requests
+import google.generativeai as genai
+import streamlit as st
+
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 def ask_ai(prompt):
-    api_key = st.secrets["GEMINI_API_KEY"]
-
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
-    }
-
-    response = requests.post(url, headers=headers, json=data)
-
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    response = model.generate_content(prompt)
+    return response.text
     if response.status_code == 200:
         result = response.json()
         return result["candidates"][0]["content"]["parts"][0]["text"]
