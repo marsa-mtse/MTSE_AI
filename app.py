@@ -1,5 +1,5 @@
 # ==========================================================
-# MTSE AI — CLEAN STABLE ENTERPRISE BUILD
+# MTSE AI — CLEAN ENTERPRISE BUILD (AR FIXED + LANG FIXED)
 # ==========================================================
 
 import streamlit as st
@@ -12,9 +12,15 @@ import io
 import zipfile
 import pdfplumber
 from docx import Document
+
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 # ==========================================================
 # CONFIG
@@ -33,7 +39,7 @@ if "lang" not in st.session_state:
     st.session_state.lang = "ar"
 
 # ==========================================================
-# LANGUAGE
+# LANGUAGE FUNCTION
 # ==========================================================
 
 def t(ar, en):
@@ -73,7 +79,7 @@ conn.commit()
 def hash_pass(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-# Default admin
+# Default Admin
 c.execute("SELECT * FROM users WHERE username='admin'")
 if not c.fetchone():
     c.execute("INSERT INTO users VALUES(NULL,?,?,?,?,?)",
@@ -81,7 +87,7 @@ if not c.fetchone():
     conn.commit()
 
 # ==========================================================
-# AI
+# AI SETUP
 # ==========================================================
 
 groq_key = st.secrets.get("GROQ_API_KEY", None)
@@ -102,7 +108,7 @@ def ask_ai(system_prompt, user_prompt):
     return response.choices[0].message.content
 
 # ==========================================================
-# PDF
+# PDF GENERATOR (ARABIC FIXED)
 # ==========================================================
 
 def generate_pdf(content, username):
@@ -111,18 +117,31 @@ def generate_pdf(content, username):
     elements = []
     styles = getSampleStyleSheet()
 
+    pdfmetrics.registerFont(TTFont('ArabicFont', 'Amiri-Regular.ttf'))
+
+    arabic_style = ParagraphStyle(
+        name='ArabicStyle',
+        parent=styles['Normal'],
+        fontName='ArabicFont',
+        fontSize=12,
+        leading=18,
+    )
+
+    reshaped_text = arabic_reshaper.reshape(content)
+    bidi_text = get_display(reshaped_text)
+
     elements.append(Paragraph("MTSE AI Professional Report", styles["Heading1"]))
-    elements.append(Spacer(1, 0.5 * inch))
+    elements.append(Spacer(1, 20))
     elements.append(Paragraph(f"Client: {username}", styles["Normal"]))
-    elements.append(Spacer(1, 0.5 * inch))
-    elements.append(Paragraph(content.replace("\n", "<br/>"), styles["Normal"]))
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph(bidi_text.replace("\n", "<br/>"), arabic_style))
 
     doc.build(elements)
     buffer.seek(0)
     return buffer
 
 # ==========================================================
-# LOGIN
+# LOGIN FUNCTION
 # ==========================================================
 
 def login(username, password):
@@ -130,12 +149,16 @@ def login(username, password):
               (username, hash_pass(password)))
     return c.fetchone()
 
+# ==========================================================
+# LOGIN PAGE
+# ==========================================================
+
 if not st.session_state.user:
 
     st.title("MTSE AI Login")
 
-    u = st.text_input("Username", key="login_user")
-    p = st.text_input("Password", type="password", key="login_pass")
+    u = st.text_input("Username")
+    p = st.text_input("Password", type="password")
 
     if st.button("Login"):
         user = login(u, p)
@@ -154,41 +177,44 @@ else:
     user = st.session_state.user
     username = user[1]
     role = user[3]
-    credits = user[5]
+
+    # تحديث الرصيد live
+    c.execute("SELECT credits FROM users WHERE username=?", (username,))
+    credits = c.fetchone()[0]
 
     with st.sidebar:
 
         st.markdown("## 🚀 MTSE AI")
 
-        if st.button("🌍 Arabic / English"):
+        if st.button("🌍 العربية / English"):
             st.session_state.lang = "en" if st.session_state.lang == "ar" else "ar"
             st.rerun()
 
-        page = st.radio("Navigation", [
-            "Universal Analyzer",
-            "Cost Engine",
-            "Social Engine",
-            "Reports",
-            "Admin",
-            "Logout"
-        ], key="main_nav")
+        page = st.radio(t("القائمة","Navigation"), [
+            t("المحلل الشامل","Universal Analyzer"),
+            t("محرك المقايسات","Cost Engine"),
+            t("تحليل السوشيال","Social Engine"),
+            t("التقارير","Reports"),
+            t("الإدارة","Admin"),
+            t("تسجيل الخروج","Logout")
+        ])
 
         st.write(f"👤 {username}")
-        st.write(f"⚡ Credits: {credits}")
+        st.write(f"⚡ {t('الرصيد','Credits')}: {credits}")
 
     # ======================================================
     # UNIVERSAL ANALYZER
     # ======================================================
 
-    if page == "Universal Analyzer":
+    if page == t("المحلل الشامل","Universal Analyzer"):
 
-        text = st.text_area("Enter Text", key="ua_text")
-        file = st.file_uploader("Upload File", key="ua_file")
+        text = st.text_area(t("اكتب النص","Enter text"))
+        file = st.file_uploader(t("ارفع ملف","Upload file"))
 
-        if st.button("Analyze", key="ua_btn"):
+        if st.button(t("تحليل","Analyze")):
 
             if credits <= 0:
-                st.error("No credits left")
+                st.error(t("لا يوجد رصيد","No credits left"))
             else:
 
                 combined = text or ""
@@ -230,19 +256,20 @@ else:
                 conn.commit()
 
                 pdf = generate_pdf(result, username)
-                st.download_button("Download PDF", pdf, "MTSE_Report.pdf")
+                st.download_button(t("تحميل PDF","Download PDF"),
+                                   pdf,
+                                   "MTSE_Report.pdf")
 
     # ======================================================
     # COST ENGINE
     # ======================================================
 
-    elif page == "Cost Engine":
+    elif page == t("محرك المقايسات","Cost Engine"):
 
-        qty = st.number_input("Quantity", 0.0, key="cost_qty")
-        price = st.number_input("Unit Price", 0.0, key="cost_price")
+        qty = st.number_input(t("الكمية","Quantity"), 0.0)
+        price = st.number_input(t("سعر الوحدة","Unit Price"), 0.0)
 
-        if st.button("Calculate", key="cost_btn"):
-
+        if st.button(t("احسب","Calculate")):
             base = qty * price
             total = base * 1.25
 
@@ -255,51 +282,51 @@ else:
     # SOCIAL ENGINE
     # ======================================================
 
-    elif page == "Social Engine":
+    elif page == t("تحليل السوشيال","Social Engine"):
 
-        content = st.text_area("Paste Link or Content", key="social_text")
+        content = st.text_area(t("ضع الرابط أو المحتوى","Paste link or content"))
 
-        if st.button("Analyze Social", key="social_btn"):
-
+        if st.button(t("تحليل","Analyze")):
             result = ask_ai(
                 "أنت استراتيجي تسويق محترف يقدم تحليل أداء وخطة تطوير",
                 content
             )
-
             st.markdown(result)
 
     # ======================================================
     # REPORTS
     # ======================================================
 
-    elif page == "Reports":
+    elif page == t("التقارير","Reports"):
 
-        report_text = st.text_area("Report Content", key="report_text")
+        report_text = st.text_area(t("محتوى التقرير","Report Content"))
 
-        if st.button("Generate Report", key="report_btn"):
+        if st.button(t("إنشاء تقرير","Generate Report")):
             pdf = generate_pdf(report_text, username)
-            st.download_button("Download Report", pdf, "Final_Report.pdf")
+            st.download_button(t("تحميل التقرير","Download Report"),
+                               pdf,
+                               "Final_Report.pdf")
 
     # ======================================================
     # ADMIN
     # ======================================================
 
-    elif page == "Admin":
+    elif page == t("الإدارة","Admin"):
 
         if role != "admin":
             st.error("Admin only")
         else:
 
-            new_user = st.text_input("New Username", key="admin_new_user")
-            new_pass = st.text_input("Password", type="password", key="admin_new_pass")
-            new_credits = st.number_input("Credits", 0, key="admin_new_credits")
+            new_user = st.text_input(t("اسم مستخدم جديد","New Username"))
+            new_pass = st.text_input(t("كلمة المرور","Password"), type="password")
+            new_credits = st.number_input(t("الرصيد","Credits"), 0)
 
-            if st.button("Create User", key="admin_create"):
+            if st.button(t("إنشاء مستخدم","Create User")):
                 c.execute("INSERT INTO users VALUES(NULL,?,?,?,?,?)",
                           (new_user, hash_pass(new_pass),
                            "client", "free", new_credits))
                 conn.commit()
-                st.success("User Created")
+                st.success(t("تم الإنشاء","User Created"))
 
             df = pd.read_sql("SELECT username,role,credits FROM users", conn)
             st.dataframe(df)
@@ -308,6 +335,6 @@ else:
     # LOGOUT
     # ======================================================
 
-    elif page == "Logout":
+    elif page == t("تسجيل الخروج","Logout"):
         st.session_state.user = None
         st.rerun()
