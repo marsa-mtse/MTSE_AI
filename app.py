@@ -208,18 +208,20 @@ elif st.session_state.page == "AI Engine":
 
     user_input = st.text_area(
         "اكتب طلبك هنا",
-        placeholder="اكتب تحليل مشروع، دراسة جدوى، محتوى تسويقي..."
+        placeholder="اكتب تحليل مشروع الصرف الصحي بالقرية..."
     )
 
     if st.button("🚀 تحليل", use_container_width=True):
 
         if user_input.strip() == "":
-            st.warning("من فضلك اكتب طلب أولاً")
+            st.warning("من فضلك اكتب طلبك أولاً")
+
         else:
-            with st.spinner("جاري تحليل البيانات باستخدام الذكاء الاصطناعي..."):
-    result = ask_ai(user_input)
-                st.markdown("### 📊 نتيجة التحليل")
-st.markdown(result)
+            with st.spinner("جاري التحليل باستخدام الذكاء الاصطناعي..."):
+                result = ask_ai(user_input)
+
+            st.markdown("### 📊 نتيجة التحليل")
+            st.markdown(result)
 # ------------------------------
 # Reports
 # ------------------------------
