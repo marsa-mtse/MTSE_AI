@@ -1,5 +1,5 @@
 # ==========================================================
-# MTSE AI — STABLE ENTERPRISE BUILD (FINAL SAFE VERSION)
+# MTSE AI — STABLE FULL BUILD (NO EXTERNAL FONTS)
 # ==========================================================
 
 import streamlit as st
@@ -10,14 +10,13 @@ import hashlib
 import datetime
 import io
 import zipfile
-import os
 import pdfplumber
 from docx import Document
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfbase import pdfmetrics
 
 import arabic_reshaper
@@ -30,7 +29,7 @@ from bidi.algorithm import get_display
 st.set_page_config(page_title="MTSE AI", page_icon="🚀", layout="wide")
 
 # ==========================================================
-# SESSION INIT
+# SESSION
 # ==========================================================
 
 if "user" not in st.session_state:
@@ -84,7 +83,7 @@ if not c.fetchone():
     conn.commit()
 
 # ==========================================================
-# AI SETUP
+# AI
 # ==========================================================
 
 groq_key = st.secrets.get("GROQ_API_KEY", None)
@@ -105,7 +104,7 @@ def ask_ai(system_prompt, user_prompt):
     return response.choices[0].message.content
 
 # ==========================================================
-# SAFE PDF GENERATOR
+# PDF (Arabic Supported Without External Font)
 # ==========================================================
 
 def generate_pdf(content, username):
@@ -114,37 +113,25 @@ def generate_pdf(content, username):
     elements = []
     styles = getSampleStyleSheet()
 
-    font_registered = False
-    font_path = "Amiri-Regular.ttf"
+    # Built-in Unicode font
+    pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
 
-    if os.path.exists(font_path):
-        try:
-            pdfmetrics.registerFont(TTFont('ArabicFont', font_path))
-            font_registered = True
-        except:
-            font_registered = False
+    arabic_style = ParagraphStyle(
+        name='ArabicStyle',
+        parent=styles['Normal'],
+        fontName='STSong-Light',
+        fontSize=12,
+        leading=18,
+    )
 
-    if font_registered:
-        arabic_style = ParagraphStyle(
-            name='ArabicStyle',
-            parent=styles['Normal'],
-            fontName='ArabicFont',
-            fontSize=12,
-            leading=18,
-        )
-        reshaped_text = arabic_reshaper.reshape(content)
-        bidi_text = get_display(reshaped_text)
-        final_text = bidi_text
-        style_used = arabic_style
-    else:
-        final_text = content
-        style_used = styles["Normal"]
+    reshaped_text = arabic_reshaper.reshape(content)
+    bidi_text = get_display(reshaped_text)
 
     elements.append(Paragraph("MTSE AI Professional Report", styles["Heading1"]))
     elements.append(Spacer(1, 20))
     elements.append(Paragraph(f"Client: {username}", styles["Normal"]))
     elements.append(Spacer(1, 20))
-    elements.append(Paragraph(final_text.replace("\n", "<br/>"), style_used))
+    elements.append(Paragraph(bidi_text.replace("\n", "<br/>"), arabic_style))
 
     doc.build(elements)
     buffer.seek(0)
@@ -175,7 +162,7 @@ if not st.session_state.user:
             st.error("Invalid credentials")
 
 # ==========================================================
-# MAIN SYSTEM
+# MAIN
 # ==========================================================
 
 else:
