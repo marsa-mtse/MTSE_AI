@@ -1,10 +1,8 @@
-streamlit
 groq
 pandas
 numpy
-openpyxl
-reportlab
-python-docx
 pdfplumber
-Pillow
+python-docx
+reportlab
+stripe
 
