@@ -6,4 +6,4 @@ requests
 openpyxl
 reportlab
 python-docx
-sqlite3
+
