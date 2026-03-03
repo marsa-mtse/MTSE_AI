@@ -1,24 +1,31 @@
 import streamlit as st
 from groq import Groq
+import os
 
-st.set_page_config(
-    page_title="MTSE AI",
-    layout="wide"
-)
+# =========================
+# CONFIGURE GROQ
+# =========================
 
 client = Groq(
     api_key=st.secrets["GROQ_API_KEY"]
 )
 
 def ask_ai(prompt: str) -> str:
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        model="llama3-8b-8192"
-    )
+    try:
+        response = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": "You are a professional AI assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+        )
 
-    return chat_completion.choices[0].message.content
+        return response.choices[0].message.content
+
+    except Exception as e:
+        return f"حدث خطأ: {e}"
 # =========================
 # UI
 # =========================
