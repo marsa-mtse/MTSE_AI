@@ -1,6 +1,9 @@
 streamlit
 groq
 pandas
-requests
-beautifulsoup4
 numpy
+requests
+openpyxl
+reportlab
+python-docx
+sqlite3
