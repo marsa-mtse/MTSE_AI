@@ -24,7 +24,7 @@ def ask_ai(prompt: str) -> str:
 - المخاطر
 - التوصيات
 - الخلاصة النهائية
-"""}
+"""},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
