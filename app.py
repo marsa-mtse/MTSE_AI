@@ -615,3 +615,234 @@ if st.session_state.user:
             st.download_button(t("تحميل التقرير","Download Report"),
                                pdf,
                                "MTSE_Final_Report.pdf")
+            # ==========================================================
+# PART 3 — ENTERPRISE HARDENING LAYER
+# ==========================================================
+
+import re
+
+# ==========================================================
+# ACTIVITY LOG TABLE
+# ==========================================================
+
+c.execute("""
+CREATE TABLE IF NOT EXISTS activity_log(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+username TEXT,
+action TEXT,
+details TEXT,
+created_at TEXT
+)
+""")
+conn.commit()
+
+def log_activity(username, action, details=""):
+    c.execute("""
+    INSERT INTO activity_log VALUES(NULL,?,?,?,?)
+    """, (
+        username,
+        action,
+        details,
+        datetime.datetime.now().isoformat()
+    ))
+    conn.commit()
+
+# ==========================================================
+# PASSWORD POLICY
+# ==========================================================
+
+def validate_password(password):
+    if len(password) < 8:
+        return False
+    return True
+
+# ==========================================================
+# LOGIN RATE LIMITER
+# ==========================================================
+
+if "login_attempts" not in st.session_state:
+    st.session_state.login_attempts = 0
+
+def login_guard():
+    if st.session_state.login_attempts >= 5:
+        st.error("Too many login attempts. Try again later.")
+        st.stop()
+
+# Apply login guard
+if not st.session_state.user:
+    login_guard()
+
+# ==========================================================
+# SMART CREDIT ENGINE
+# ==========================================================
+
+CREDIT_COST = {
+    "universal": 2,
+    "social": 2,
+    "cost": 1,
+    "report": 3
+}
+
+def charge_credits(username, action_type, extra=0):
+    cost = CREDIT_COST.get(action_type, 1) + extra
+    c.execute("SELECT credits_balance FROM users WHERE username=?", (username,))
+    balance = c.fetchone()[0]
+
+    if balance < cost:
+        return False
+
+    c.execute("""
+    UPDATE users SET credits_balance = credits_balance - ?
+    WHERE username=?
+    """, (cost, username))
+    conn.commit()
+    return True
+
+# ==========================================================
+# FILE SECURITY LAYER
+# ==========================================================
+
+ALLOWED_EXTENSIONS = ["pdf","docx","csv","xlsx","txt","zip"]
+MAX_FILE_SIZE_MB = 10
+
+def validate_file(uploaded_file):
+    if uploaded_file is None:
+        return True
+
+    ext = uploaded_file.name.split(".")[-1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        st.error("File type not allowed.")
+        return False
+
+    size_mb = uploaded_file.size / (1024*1024)
+    if size_mb > MAX_FILE_SIZE_MB:
+        st.error("File too large.")
+        return False
+
+    return True
+
+# ==========================================================
+# INPUT SANITIZER
+# ==========================================================
+
+def sanitize_input(text):
+    if not text:
+        return ""
+    text = re.sub(r"[<>]", "", text)
+    return text[:15000]
+
+# ==========================================================
+# STRIPE SESSION VERIFICATION
+# ==========================================================
+
+def verify_payment(session_id, username):
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if session.payment_status == "paid":
+            amount = session.amount_total / 100
+
+            # Upgrade plan based on amount
+            if amount == PLAN_PRICING["pro"]:
+                plan = "pro"
+            elif amount == PLAN_PRICING["enterprise"]:
+                plan = "enterprise"
+            else:
+                return False
+
+            credits = PLAN_CREDITS[plan]
+
+            c.execute("""
+            UPDATE users 
+            SET package=?, credits_limit=?, credits_balance=?, billing_status='active'
+            WHERE username=?
+            """, (plan, credits, credits, username))
+
+            c.execute("""
+            UPDATE payments SET status='paid'
+            WHERE stripe_session=?
+            """, (session_id,))
+
+            conn.commit()
+            log_activity(username, "payment_verified", plan)
+            return True
+
+    except Exception:
+        return False
+
+# ==========================================================
+# APPLY PAYMENT VERIFICATION IF SUCCESS PARAM EXISTS
+# ==========================================================
+
+query_params = st.query_params
+
+if "payment" in query_params and query_params["payment"] == "success":
+    c.execute("""
+    SELECT stripe_session FROM payments 
+    WHERE username=? AND status='pending'
+    ORDER BY id DESC LIMIT 1
+    """, (st.session_state.user[1],))
+    last_payment = c.fetchone()
+
+    if last_payment:
+        verified = verify_payment(last_payment[0], st.session_state.user[1])
+        if verified:
+            st.success("Payment verified and plan upgraded.")
+        else:
+            st.error("Payment verification failed.")
+
+# ==========================================================
+# ROLE GUARD
+# ==========================================================
+
+def require_admin(role):
+    if role != "admin":
+        st.error("Access denied.")
+        st.stop()
+
+# ==========================================================
+# ENHANCED ADMIN PANEL
+# ==========================================================
+
+if st.session_state.user:
+
+    username = st.session_state.user[1]
+    role = st.session_state.user[3]
+
+    if role == "admin":
+
+        st.markdown("---")
+        st.header("Advanced Admin Controls")
+
+        # Suspend user
+        suspend_user = st.text_input("Suspend Username")
+        if st.button("Suspend User"):
+            c.execute("""
+            UPDATE users SET billing_status='suspended'
+            WHERE username=?
+            """, (suspend_user,))
+            conn.commit()
+            log_activity(username, "suspend_user", suspend_user)
+            st.success("User suspended.")
+
+        # Adjust credits
+        adjust_user = st.text_input("Adjust Credits Username")
+        new_credits = st.number_input("New Credit Balance", 0)
+
+        if st.button("Update Credits"):
+            c.execute("""
+            UPDATE users SET credits_balance=?
+            WHERE username=?
+            """, (new_credits, adjust_user))
+            conn.commit()
+            log_activity(username, "adjust_credits", adjust_user)
+            st.success("Credits updated.")
+
+        # View activity log
+        if st.button("View Activity Logs"):
+            logs = c.execute("""
+            SELECT username, action, created_at 
+            FROM activity_log ORDER BY id DESC LIMIT 50
+            """).fetchall()
+            for log in logs:
+                st.write(log)
+            
