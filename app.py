@@ -351,3 +351,267 @@ else:
     elif page == t("تسجيل الخروج","Logout"):
         st.session_state.user=None
         st.rerun()
+# ==============================
+# IMPORTS (AI + FILES)
+# ==============================
+
+from groq import Groq
+import pandas as pd
+import numpy as np
+import pdfplumber
+from docx import Document
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+import io
+import zipfile
+
+# ==============================
+# GROQ INIT
+# ==============================
+
+groq_key = st.secrets.get("GROQ_API_KEY", None)
+client = Groq(api_key=groq_key) if groq_key else None
+
+def ask_ai(system_prompt, user_prompt):
+    if not client:
+        return "Groq not configured."
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role":"system","content":system_prompt},
+            {"role":"user","content":user_prompt}
+        ],
+        temperature=0.4,
+        max_tokens=2000
+    )
+    return response.choices[0].message.content
+
+def classify_content(text):
+    return ask_ai(
+        "أنت مصنف محتوى محترف",
+        f"حدد نوع المحتوى: هندسي / مالي / إداري / تسويقي / قانوني / مختلط\n{text[:4000]}"
+    )
+
+# ==============================
+# ENTERPRISE PDF
+# ==============================
+
+def generate_enterprise_pdf(content, username):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    elements.append(Paragraph("MTSE AI Enterprise Report", styles["Heading1"]))
+    elements.append(Spacer(1,0.5*inch))
+    elements.append(Paragraph(f"Client: {username}", styles["Normal"]))
+    elements.append(Spacer(1,0.5*inch))
+    elements.append(Paragraph(content.replace("\n","<br/>"), styles["Normal"]))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+# ==============================
+# ADVANCED COST ENGINE
+# ==============================
+
+def advanced_cost_engine(qty, price):
+    base = qty * price
+    indirect = base * 0.1
+    waste = base * 0.05
+    admin = base * 0.07
+    profit = base * 0.15
+
+    conservative = base * 1.05
+    moderate = base * 1.15
+    aggressive = base * 1.25
+
+    return {
+        "Base": base,
+        "Indirect": indirect,
+        "Waste": waste,
+        "Admin": admin,
+        "Profit": profit,
+        "Conservative": conservative,
+        "Moderate": moderate,
+        "Aggressive": aggressive
+    }
+
+# ==============================
+# EXTEND NAVIGATION
+# ==============================
+
+if st.session_state.user:
+
+    with st.sidebar:
+        extended_page = st.radio(
+            t("محركات النظام","System Engines"),
+            [
+                t("المحلل الشامل","Universal Analyzer"),
+                t("محرك المقايسات","Cost Engine"),
+                t("تحليل السوشيال","Social Engine"),
+                t("التقارير الاحترافية","Enterprise Reports")
+            ]
+        )
+
+    username = st.session_state.user[1]
+
+    # ==========================================================
+    # UNIVERSAL ANALYZER
+    # ==========================================================
+
+    if extended_page == t("المحلل الشامل","Universal Analyzer"):
+
+        st.title(t("المحلل الشامل","Universal Analyzer"))
+
+        text_input = st.text_area(t("اكتب نص","Enter text"))
+        uploaded_file = st.file_uploader(t("ارفع ملف","Upload file"))
+
+        if st.button(t("تحليل","Analyze")):
+
+            c.execute("SELECT credits_balance FROM users WHERE username=?", (username,))
+            credits = c.fetchone()[0]
+
+            if credits <= 0:
+                st.error(t("لا يوجد رصيد","No credits left"))
+            else:
+                combined = text_input if text_input else ""
+
+                if uploaded_file:
+                    if uploaded_file.name.endswith(".pdf"):
+                        with pdfplumber.open(uploaded_file) as pdf:
+                            for page in pdf.pages:
+                                combined += page.extract_text() or ""
+                    elif uploaded_file.name.endswith(".docx"):
+                        doc = Document(uploaded_file)
+                        for para in doc.paragraphs:
+                            combined += para.text
+                    elif uploaded_file.name.endswith(".csv"):
+                        df = pd.read_csv(uploaded_file)
+                        combined += df.to_string()
+                    elif uploaded_file.name.endswith(".xlsx"):
+                        df = pd.read_excel(uploaded_file)
+                        combined += df.to_string()
+                    elif uploaded_file.name.endswith(".zip"):
+                        with zipfile.ZipFile(uploaded_file) as z:
+                            combined += "ZIP contains: " + ", ".join(z.namelist())
+                    else:
+                        combined += uploaded_file.read().decode("utf-8", errors="ignore")
+
+                content_type = classify_content(combined)
+                st.subheader(t("نوع المحتوى","Content Type"))
+                st.write(content_type)
+
+                result = ask_ai(
+                    "أنت محلل مشاريع شامل يقدم تقرير احترافي يشمل ملخص تنفيذي وتحليل وتوصيات",
+                    combined[:12000]
+                )
+
+                st.markdown(result)
+
+                # Save analysis
+                c.execute("""
+                INSERT INTO analyses VALUES(NULL,?,?,?,?,?)
+                """, (
+                    username,
+                    "universal",
+                    combined[:500],
+                    result,
+                    datetime.datetime.now().isoformat()
+                ))
+                c.execute("""
+                UPDATE users SET credits_balance = credits_balance - 1
+                WHERE username=?
+                """, (username,))
+                conn.commit()
+
+                pdf = generate_enterprise_pdf(result, username)
+                st.download_button(t("تحميل PDF","Download PDF"),
+                                   pdf,
+                                   "MTSE_Enterprise_Report.pdf")
+
+    # ==========================================================
+    # COST ENGINE
+    # ==========================================================
+
+    elif extended_page == t("محرك المقايسات","Cost Engine"):
+
+        st.title(t("محرك المقايسات","Cost Engine"))
+
+        qty = st.number_input(t("الكمية","Quantity"), 0.0)
+        price = st.number_input(t("سعر الوحدة","Unit Price"), 0.0)
+
+        if st.button(t("احسب","Calculate")):
+            result = advanced_cost_engine(qty, price)
+            st.json(result)
+
+            c.execute("""
+            INSERT INTO analyses VALUES(NULL,?,?,?,?,?)
+            """, (
+                username,
+                "cost",
+                f"Qty:{qty} Price:{price}",
+                str(result),
+                datetime.datetime.now().isoformat()
+            ))
+            conn.commit()
+
+    # ==========================================================
+    # SOCIAL ENGINE
+    # ==========================================================
+
+    elif extended_page == t("تحليل السوشيال","Social Engine"):
+
+        st.title(t("تحليل السوشيال","Social Engine"))
+
+        social_input = st.text_area(t("ضع الرابط أو المحتوى","Paste link or content"))
+
+        if st.button(t("تحليل","Analyze")):
+
+            result = ask_ai(
+                "أنت استراتيجي تسويق محترف. قدم تحليل أداء + تحليل هوية + خطة 30 يوم + توصيات تطوير.",
+                social_input
+            )
+
+            st.markdown(result)
+
+            c.execute("""
+            INSERT INTO analyses VALUES(NULL,?,?,?,?,?)
+            """, (
+                username,
+                "social",
+                social_input[:500],
+                result,
+                datetime.datetime.now().isoformat()
+            ))
+            conn.commit()
+
+    # ==========================================================
+    # ENTERPRISE REPORT GENERATOR
+    # ==========================================================
+
+    elif extended_page == t("التقارير الاحترافية","Enterprise Reports"):
+
+        st.title(t("التقارير الاحترافية","Enterprise Reports"))
+
+        report_text = st.text_area(t("محتوى التقرير","Report Content"))
+
+        if st.button(t("إنشاء تقرير","Generate Report")):
+            pdf = generate_enterprise_pdf(report_text, username)
+
+            c.execute("""
+            INSERT INTO analyses VALUES(NULL,?,?,?,?,?)
+            """, (
+                username,
+                "report",
+                report_text[:500],
+                report_text,
+                datetime.datetime.now().isoformat()
+            ))
+            conn.commit()
+
+            st.download_button(t("تحميل التقرير","Download Report"),
+                               pdf,
+                               "MTSE_Final_Report.pdf")
