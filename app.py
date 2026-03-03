@@ -15,7 +15,9 @@ def ask_ai(prompt: str) -> str:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": """
+                {
+                    "role": "system",
+                    "content": """
 أنت خبير استشاري محترف في تحليل المشاريع الهندسية والاقتصادية.
 قدم التحليل منظمًا في أقسام واضحة:
 
@@ -24,8 +26,12 @@ def ask_ai(prompt: str) -> str:
 - المخاطر
 - التوصيات
 - الخلاصة النهائية
-"""},
-                {"role": "user", "content": prompt}
+"""
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
             ],
             temperature=0.7,
             max_tokens=1024,
