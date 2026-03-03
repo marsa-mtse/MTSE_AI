@@ -1,34 +1,24 @@
 import streamlit as st
-from google import genai
-
-# =========================
-# PAGE CONFIG
-# =========================
+from groq import Groq
 
 st.set_page_config(
     page_title="MTSE AI",
     layout="wide"
 )
 
-# =========================
-# CONFIGURE CLIENT
-# =========================
-
-client = genai.Client(
-    api_key=st.secrets["GEMINI_API_KEY"]
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
 )
 
-# =========================
-# AI FUNCTION
-# =========================
-
 def ask_ai(prompt: str) -> str:
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        model="llama3-70b-8192"
     )
 
-    return response.text if response.text else "لا يوجد رد."
+    return chat_completion.choices[0].message.content
 # =========================
 # UI
 # =========================
