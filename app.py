@@ -1,8 +1,8 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # =========================
-# PAGE CONFIG (مرة واحدة فقط)
+# PAGE CONFIG
 # =========================
 
 st.set_page_config(
@@ -11,10 +11,10 @@ st.set_page_config(
 )
 
 # =========================
-# CONFIGURE GEMINI
+# CONFIGURE CLIENT
 # =========================
 
-genai.configure(
+client = genai.Client(
     api_key=st.secrets["GEMINI_API_KEY"]
 )
 
@@ -23,18 +23,12 @@ genai.configure(
 # =========================
 
 def ask_ai(prompt: str) -> str:
-    """
-    Sends prompt to Gemini 1.5 Flash model
-    and returns generated text response
-    """
-
-    model = genai.GenerativeModel("gemini-1.5-flash")
-
-    response = model.generate_content(
-        prompt
+    response = client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=prompt
     )
 
-    return response.text if response.text else "لا يوجد رد من النموذج."
+    return response.text if response.text else "لا يوجد رد."
 # =========================
 # UI
 # =========================
