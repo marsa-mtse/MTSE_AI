@@ -1,9 +1,9 @@
+streamlit
 groq
 pandas
 numpy
 pdfplumber
 python-docx
 reportlab
-stripe
 arabic-reshaper
 python-bidi
