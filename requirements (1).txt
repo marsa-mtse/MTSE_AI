@@ -1,13 +1,13 @@
 streamlit
 groq
-openai          # اختياري — Groq هو الافتراضي
+openai        
 pandas
 numpy
-scikit-learn    # للـ trend prediction
+scikit-learn   
 plotly
 reportlab
-pdfplumber      # قراءة PDF (بديل PyPDF2/fitz)
+pdfplumber    
 python-docx
 arabic-reshaper
 python-bidi
-stripe          # فقط لو هتفعّل الدفع
+stripe         
