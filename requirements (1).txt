@@ -1,31 +1,13 @@
-# MTSE Marketing Engine v3.0 — Requirements
-# ==========================================
-
-# Core
 streamlit
-
-# AI Engines
 groq
 openai          # اختياري — Groq هو الافتراضي
-
-# Data & Analysis
 pandas
 numpy
 scikit-learn    # للـ trend prediction
-
-# Charts
 plotly
-
-# PDF
 reportlab
 pdfplumber      # قراءة PDF (بديل PyPDF2/fitz)
-
-# Word Documents
 python-docx
-
-# Arabic Support
 arabic-reshaper
 python-bidi
-
-# Payments (اختياري)
 stripe          # فقط لو هتفعّل الدفع
