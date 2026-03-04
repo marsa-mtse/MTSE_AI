@@ -1,9 +1,0 @@
-streamlit
-groq
-pandas
-numpy
-pdfplumber
-python-docx
-reportlab
-arabic-reshaper
-python-bidi
